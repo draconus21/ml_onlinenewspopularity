@@ -6,23 +6,45 @@
 package onlinenewspopularity;
 
 import Jama.Matrix;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
+ * This is the main class. It perform ML by using appropriate classes
  * @author neeth
  */
 public class OnlineNewsPopularity {
 
-    public static final int SIZE = 5;
-    
     public static void main(String[] args) {
-        DataFormatter df = new DataFormatter("data\\OnlineNewsPopularity.csv");
-        Matrix data = new Matrix(SIZE, 58);
-        Matrix y    = new Matrix(SIZE, 1);
+        try {
+            DataFormatter df = new DataFormatter(Constants.INPUT_FILE);
+
+            List testSet = df.readData();
+
+            List features = (ArrayList)testSet.get(0);
+            String predictColName = (String)testSet.get(1);
+            Matrix data = (Matrix)testSet.get(2);
+            Matrix y    = (Matrix)testSet.get(3);
         
-        df.readData(data, y);
-        
-        data.print(2, 61);
+            //print data that has been read
+            System.out.println("predict: " + predictColName);
+            System.out.print("features: ");
+            for(int i = 0; i<features.size(); i++) {
+                System.out.print(features.get(i) + " | ");
+            }
+            System.out.println("Data set:");
+            data.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+            System.out.println("y:");
+            y.print(new DecimalFormat("### ###.###"), 5);
+            
+            //Perform Linear Regression
+            
+        } catch (Exception ex) {
+            Logger.getLogger(OnlineNewsPopularity.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

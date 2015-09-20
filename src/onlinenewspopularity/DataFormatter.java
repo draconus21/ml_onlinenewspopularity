@@ -6,79 +6,90 @@
 package onlinenewspopularity;
 
 import Jama.Matrix;
-import java.io.BufferedReader;
+import com.sun.istack.internal.logging.Logger;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
 import java.io.Reader;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import onlinenewspopularity.logging.logger.MlLogger;
+import java.util.logging.Level;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
 /**
- *
+ * This class reads data from a file and creates feature list, prediction column,
+ * and test data
  * @author neeth
  */
 public class DataFormatter {
     
-    private static final MlLogger logger = new MlLogger();
+    private static final Logger LOGGER = Logger.getLogger(DataFormatter.class);
     
-    private String fileName;
+    private final String fileName;
     
     public DataFormatter(String fileName) {
         this.fileName = fileName;
     }
     
-    public void readData(Matrix x, Matrix y) {
+    public List<Matrix> readData() {
         try {
             try (Reader br = new FileReader(new File(fileName))) {
                 Iterable<CSVRecord> records = CSVFormat.DEFAULT.parse(br);
                 
-                List features = new ArrayList<String>();
+                List features = new ArrayList<>();
+                String predictColName;
+                
                 Iterator<CSVRecord> itr = records.iterator();
                 CSVRecord header = itr.next();
-                for(int i=2; i<header.size(); i++) {
-                    //System.out.print(i + ": " + header.get(i).trim() + " | ");
-                    
+                
+                features.add(Constants.FEATURE_COL1_NAME);
+                for(int i=2; i<header.size()-1; i++) {
                     features.add(header.get(i).trim());
                 }
+                predictColName = header.get((header.size()-1)).trim();
                 
-                double[][] data = new double [39644][header.size()-2];
-                double[][] res  = new double [39644][1];
+                double[][] data = new double [Constants.SIZE][features.size()];
+                double[][] res  = new double [Constants.SIZE][1];
                 
                 int i=0;
                 for(CSVRecord record : records) {
-                    for(int j=0; j<features.size(); j++) {
-                        //logger.log((String)features.get(i));
-                        try {
-                            if(j == features.size() - 1) {
-                                res[i][0] = Double.parseDouble(record.get(j));
+                    if(i<Constants.SIZE) {
+                        for(int j=1; j<features.size(); j++) {
+                            try {
+                                if(j == features.size() - 1) {
+                                    res[i][0] = Double.parseDouble(record.get(j));
+                                } else if(j == 1) {
+                                    data[i][j-1] = 1.0;
+                                } else {
+                                    data[i][j-1] = Double.parseDouble(record.get(j));
+                                }
+                            } catch (Exception e) {
+                                LOGGER.log(Level.WARNING, "fail: " +(String) features.get(j) + ": " + record.get(j) + "\n" + e.getMessage());
+                                data[i][j] = 0;
                             }
-                            data[i][j] = Double.parseDouble(record.get(j));
-                        } catch (Exception e) {
-                            logger.log("fail: " +(String) features.get(j) + ": " + record.get(j));
-                            data[i][j] = 0;
                         }
-                        //System.out.print(data[i][j] + " | ");
+                        i++;
+                    } else {
+                        break;
                     }
-                    //System.out.println();
-                    i++;
                 }
                 
                 Matrix tmpx = new Matrix(data);
                 Matrix tmpy = new Matrix(res);
-                for(i=2; i<features.size(); i++) {
-                    System.out.print((String)features.get(i) + "|");
-                }
-                tmpx.print(new DecimalFormat("### ###.###"), 5);
-                //tmpy.print(10, 1);
+               
+                List temp = new ArrayList<>();
+                temp.add(features);
+                temp.add(predictColName);
+                temp.add(tmpx);
+                temp.add(tmpy);
+                
+                return temp;
             }
         } catch (IOException iEx) {
-            logger.log("IOException in readData");
+            LOGGER.log(Level.WARNING, "IOException in readData: " + iEx.getMessage());
+            return null;
         }
     }
 }

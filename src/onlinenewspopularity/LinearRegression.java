@@ -5,25 +5,36 @@
  */
 package onlinenewspopularity;
 
-import Jama.*;
+import Jama.Matrix;
+import java.util.Random;
 
 /**
- *
+ * This abstract class defines the structure for Linear Regression classes
  * @author neeth
  */
-public class LinearRegression {
+public abstract class LinearRegression {
    
-    private Matrix theta;
-    private Matrix x;
+    protected Matrix theta;
+    protected Matrix x;
+    protected Matrix y;
     
-    public void init (Matrix x, Matrix theta) {
+    public void init (Matrix x, Matrix y) {
         this.x = x;
-        this.theta = theta;
+        this.y = y;
+        int features = x.getColumnDimension();
+        theta = new Matrix(features,1);
+        init_theta(theta);
     }
     
-    
-    public void test() {
-        System.out.println("test");
+    private void init_theta(Matrix theta) {
+        Random randomNumGen = new Random();
+        int rand_bound = 100;
+        for(int i = 0; i < theta.getColumnDimension(); i++) {
+            theta.set(i, 0, (double)randomNumGen.nextInt(rand_bound)/rand_bound);
+        }
+    }
+    public abstract void doLinearRegression(); 
+    /*public void test() {
         LinearRegression l = new LinearRegression();
         double[][] test = new double[3][3];
         for(int i=0; i<3; i++) {
@@ -54,5 +65,5 @@ public class LinearRegression {
         System.out.println("x");
         Matrix inv = theta.inverse();
         inv.print(3, 3);
-    }
+    }*/
 }
