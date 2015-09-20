@@ -18,6 +18,8 @@ import java.util.logging.Logger;
  */
 public class OnlineNewsPopularity {
 
+    private static final Logger LOGGER = Logger.getLogger(OnlineNewsPopularity.class.getName());
+    
     public static void main(String[] args) {
         try {
             DataFormatter df = new DataFormatter(Constants.INPUT_FILE);
@@ -41,9 +43,12 @@ public class OnlineNewsPopularity {
             y.print(new DecimalFormat("### ###.###"), 5);
             
             //Perform Linear Regression
+            LinearRegression lr = new ClosedFormSolution();
+            lr.init(data, y);
+            Matrix res = lr.doLinearRegression();
             
-        } catch (Exception ex) {
-            Logger.getLogger(OnlineNewsPopularity.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
         }
     }
     

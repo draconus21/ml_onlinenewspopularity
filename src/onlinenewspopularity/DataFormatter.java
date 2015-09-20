@@ -6,15 +6,14 @@
 package onlinenewspopularity;
 
 import Jama.Matrix;
-import com.sun.istack.internal.logging.Logger;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.File;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -25,7 +24,7 @@ import org.apache.commons.csv.CSVRecord;
  */
 public class DataFormatter {
     
-    private static final Logger LOGGER = Logger.getLogger(DataFormatter.class);
+    private static final Logger LOGGER = Logger.getLogger(DataFormatter.class.getName());
     
     private final String fileName;
     
@@ -52,28 +51,102 @@ public class DataFormatter {
                 
                 double[][] data = new double [Constants.SIZE][features.size()];
                 double[][] res  = new double [Constants.SIZE][1];
+                double[][] trainMinMax = new double[3][features.size()];
+                boolean[] normalize = new boolean[features.size()];
+                boolean[] validFeature = new boolean[features.size()];
+                int featureCount = 0;
+                
+                for(int i = 0; i<trainMinMax[0].length; i++) {
+                    trainMinMax[0][i] = Double.MAX_VALUE;   //Min Value of feature i
+                    trainMinMax[1][i] = Double.MIN_VALUE;   //Max Value of feature i
+                    trainMinMax[2][i] = 0;                  //Avg Value of feature i
+                    normalize[i]      = Boolean.FALSE;      //No nomramlisation required by default
+                    validFeature[i]   = Boolean.FALSE;      //Not a valid feature by default
+                }
                 
                 int i=0;
                 for(CSVRecord record : records) {
                     if(i<Constants.SIZE) {
-                        for(int j=1; j<features.size(); j++) {
-                            try {
-                                if(j == features.size() - 1) {
-                                    res[i][0] = Double.parseDouble(record.get(j));
-                                } else if(j == 1) {
-                                    data[i][j-1] = 1.0;
-                                } else {
-                                    data[i][j-1] = Double.parseDouble(record.get(j));
+                        for(int j = 0; j<=features.size(); j++) {
+                            double value;
+                            if(j == 0) {
+                                data[i][j] = 1.0;
+                                value = data [i][j];
+                                if(validFeature[j] == Boolean.FALSE) {
+                                    featureCount++;
                                 }
-                            } catch (Exception e) {
-                                LOGGER.log(Level.WARNING, "fail: " +(String) features.get(j) + ": " + record.get(j) + "\n" + e.getMessage());
-                                data[i][j] = 0;
+                                validFeature[j] = Boolean.TRUE;
+                            } else if(j == features.size()) {
+                                res[i][0] = Double.parseDouble(record.get(record.size()-1));
+                                value = res[i][0];
+                            } else {
+                                data[i][j] = Double.parseDouble(record.get(j+1));
+                                value = data[i][j];
+                                if(value != 0) {
+                                    if(validFeature[j] == Boolean.FALSE) {
+                                        featureCount++;
+                                    }
+                                    validFeature[j] = Boolean.TRUE;
+                                    
+                                }
                             }
+                            
+                            if(j != features.size()) {          //skip normalisation 
+                                                                //check for predict column
+                                    if(value < trainMinMax[0][i]) {
+                                        trainMinMax[0][j] = value;
+                                    }
+                                    if(value > trainMinMax[1][i]) {
+                                        trainMinMax[1][j] = value;
+                                    }
+                                    
+                                    trainMinMax[2][j] = (trainMinMax[2][j] * (i) + value ) / (i+1);
+                                }
                         }
-                        i++;
                     } else {
                         break;
                     }
+                    i++;
+                }
+                
+                //Normalization check
+                for(i = 0; i<features.size(); i++) {
+                    if(trainMinMax[0][i] < (-1*Constants.SPREAD) || //Perform Normalization if 
+                       trainMinMax[1][i] > Constants.SPREAD) {      //the data is spread out
+                        normalize[i] = Boolean.TRUE;
+                    }
+                }
+                
+                //Perform normalisation 
+                for(i = 0; i<Constants.SIZE; i++) {
+                    for(int j = 0; j<data[i].length; j++) {
+                        if(normalize[j] == Boolean.TRUE) {
+                            double range = Math.abs(trainMinMax[1][j] - trainMinMax[0][j]);
+                            data[i][j] = (data[i][j]-trainMinMax[2][j])/range;
+                        }
+                    }
+                }
+                
+                System.out.println(featureCount + " " + features.size());
+                if(featureCount < features.size()) {
+                    List featuresCopy = new ArrayList<String>();
+                    featuresCopy.addAll(features);
+                    double[][] newData = new double[Constants.SIZE][featureCount];
+                    int k = 0;
+                    
+                    for(int j = 0; j<featuresCopy.size(); j++) {
+                        if(validFeature[j] == Boolean.TRUE) {
+                            for(i = 0; i<Constants.SIZE; i++) {
+                                newData[i][k] = data[i][j];
+                            } 
+                            k++;
+                        } else {
+                            LOGGER.log(Level.INFO, "Removing empty feature: {0}", features.get(j));
+                            features.remove(j);
+                        }
+                    }
+                    
+                    data = newData;
                 }
                 
                 Matrix tmpx = new Matrix(data);
@@ -87,8 +160,8 @@ public class DataFormatter {
                 
                 return temp;
             }
-        } catch (IOException iEx) {
-            LOGGER.log(Level.WARNING, "IOException in readData: " + iEx.getMessage());
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
             return null;
         }
     }

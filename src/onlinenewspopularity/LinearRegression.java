@@ -18,10 +18,15 @@ public abstract class LinearRegression {
     protected Matrix x;
     protected Matrix y;
     
-    public void init (Matrix x, Matrix y) {
+    public void init (Matrix x, Matrix y) throws Exception {
         this.x = x;
         this.y = y;
         int features = x.getColumnDimension();
+        if(y.getRowDimension() != x.getRowDimension()) {
+            throw new Exception ("Invalid traning data. Row count mismatch. X: "
+                    + x.getRowDimension() + "x" + x.getColumnDimension() +
+                    " | Y: "  + y.getRowDimension() + "x" + y.getColumnDimension());
+        }
         theta = new Matrix(features,1);
         init_theta(theta);
     }
@@ -33,7 +38,7 @@ public abstract class LinearRegression {
             theta.set(i, 0, (double)randomNumGen.nextInt(rand_bound)/rand_bound);
         }
     }
-    public abstract void doLinearRegression(); 
+    public abstract Matrix doLinearRegression(); 
     /*public void test() {
         LinearRegression l = new LinearRegression();
         double[][] test = new double[3][3];

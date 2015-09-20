@@ -5,6 +5,14 @@
  */
 package onlinenewspopularity;
 
+import Jama.Matrix;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * This is a LinearRegression class.
  * It performs linear regression by using the Closed-form solution
@@ -12,8 +20,45 @@ package onlinenewspopularity;
  */
 public class ClosedFormSolution extends LinearRegression {
 
+    private static final Logger LOGGER = Logger.getLogger(ClosedFormSolution.class.getName());
+    
+    private void selectTestSet() {
+        Random randomGen = new Random();
+        int size = theta.getRowDimension();
+        List used = new ArrayList<>();
+        
+        Matrix xCopy = x.copy();
+        x = new Matrix(size, size);
+        
+        for(int i = 0; i<size; i++) {
+            int k = randomGen.nextInt(size);
+            while(!used.isEmpty() && used.contains(k)) {
+                k = randomGen.nextInt(size);
+            }
+            
+            x.setMatrix(i, i, 0, size-1, xCopy.getMatrix(k, k, 0, size-1));
+            used.add(k);
+        }
+    }
+    
     @Override
-    public void doLinearRegression() {
+    public Matrix doLinearRegression() {
+        try{
+            selectTestSet();
+            x.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+            System.out.println("SIZE OF NEW X: " + x.getRowDimension() + "x" + x.getColumnDimension());
+            Matrix transpose = x.transpose();
+
+            Matrix prod = transpose.times(x);
+            Matrix inv  = prod.inverse();
+            Matrix res = inv.times(y);
+
+            res.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+            return res;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
+            return null;
+        }
        
     }
     
