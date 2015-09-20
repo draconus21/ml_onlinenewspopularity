@@ -15,7 +15,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import onlinenewspopularity.logging.logger.EventLogger;
+import onlinenewspopularity.logging.logger.MlLogger;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -25,7 +25,7 @@ import org.apache.commons.csv.CSVRecord;
  */
 public class DataFormatter {
     
-    private static final EventLogger logger = new EventLogger();
+    private static final MlLogger logger = new MlLogger();
     
     private String fileName;
     
@@ -52,7 +52,7 @@ public class DataFormatter {
                 
                 int i=0;
                 for(CSVRecord record : records) {
-                    for(int j=2; j<features.size(); j++) {
+                    for(int j=0; j<features.size(); j++) {
                         //logger.log((String)features.get(i));
                         try {
                             if(j == features.size() - 1) {

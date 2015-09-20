@@ -13,13 +13,12 @@ import Jama.Matrix;
  */
 public class OnlineNewsPopularity {
 
-    /**
-     * @param args the command line arguments
-     */
+    public static final int SIZE = 5;
+    
     public static void main(String[] args) {
         DataFormatter df = new DataFormatter("data\\OnlineNewsPopularity.csv");
-        Matrix data = new Matrix(39644, 58);
-        Matrix y    = new Matrix(39644, 1);
+        Matrix data = new Matrix(SIZE, 58);
+        Matrix y    = new Matrix(SIZE, 1);
         
         df.readData(data, y);
         
