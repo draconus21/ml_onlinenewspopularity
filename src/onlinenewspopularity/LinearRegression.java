@@ -6,6 +6,7 @@
 package onlinenewspopularity;
 
 import Jama.Matrix;
+import java.text.DecimalFormat;
 import java.util.Random;
 
 /**
@@ -33,10 +34,13 @@ public abstract class LinearRegression {
     
     private void init_theta(Matrix theta) {
         Random randomNumGen = new Random();
-        int rand_bound = 100;
-        for(int i = 0; i < theta.getColumnDimension(); i++) {
-            theta.set(i, 0, (double)randomNumGen.nextInt(rand_bound)/rand_bound);
+        int rand_bound = 10;
+        for(int i = 0; i < theta.getRowDimension(); i++) {
+            double thetaVal = (double)(randomNumGen.nextInt(rand_bound)+1)/rand_bound;
+            theta.set(i, 0, thetaVal);
         }
+        System.out.println("theta: ");
+        theta.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
     }
     public abstract Matrix doLinearRegression(); 
     /*public void test() {

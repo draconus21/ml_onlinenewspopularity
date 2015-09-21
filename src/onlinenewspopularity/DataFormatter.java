@@ -9,6 +9,7 @@ import Jama.Matrix;
 import java.io.FileReader;
 import java.io.File;
 import java.io.Reader;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,7 +33,7 @@ public class DataFormatter {
         this.fileName = fileName;
     }
     
-    public List<Matrix> readData() {
+    public List<Matrix> readData() throws Exception {
         try {
             try (Reader br = new FileReader(new File(fileName))) {
                 Iterable<CSVRecord> records = CSVFormat.DEFAULT.parse(br);
@@ -93,14 +94,15 @@ public class DataFormatter {
                             
                             if(j != features.size()) {          //skip normalisation 
                                                                 //check for predict column
-                                    if(value < trainMinMax[0][i]) {
+                                    if(value < trainMinMax[0][j]) {
                                         trainMinMax[0][j] = value;
                                     }
-                                    if(value > trainMinMax[1][i]) {
+                                    if(value > trainMinMax[1][j]) {
                                         trainMinMax[1][j] = value;
                                     }
                                     
                                     trainMinMax[2][j] = (trainMinMax[2][j] * (i) + value ) / (i+1);
+                                    
                                 }
                         }
                     } else {
@@ -111,7 +113,7 @@ public class DataFormatter {
                 
                 //Normalization check
                 for(i = 0; i<features.size(); i++) {
-                    if(trainMinMax[0][i] < (-1*Constants.SPREAD) || //Perform Normalization if 
+                    if(trainMinMax[0][i] < (-1*Constants.SPREAD)|| //Perform Normalization if 
                        trainMinMax[1][i] > Constants.SPREAD) {      //the data is spread out
                         normalize[i] = Boolean.TRUE;
                     }
@@ -127,7 +129,7 @@ public class DataFormatter {
                     }
                 }
                 
-                System.out.println(featureCount + " " + features.size());
+                //Remove empty features
                 if(featureCount < features.size()) {
                     List featuresCopy = new ArrayList<String>();
                     featuresCopy.addAll(features);
@@ -162,7 +164,7 @@ public class DataFormatter {
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
-            return null;
+            throw e;
         }
     }
 }
