@@ -38,9 +38,9 @@ public class OnlineNewsPopularity {
                 System.out.print(features.get(i) + " | ");
             }
             System.out.println("Data set:");
-            //data.print(new DecimalFormat(Constants.NUMBER_FORMAT), 8);
+            data.print(new DecimalFormat(Constants.NUMBER_FORMAT), 8);
             System.out.println("y:");
-            //y.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+            y.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
             
             //Perform Linear Regression
             //LinearRegression lr = new ClosedFormSolution();

@@ -40,6 +40,9 @@ public abstract class LinearRegression {
             theta.set(i, 0, thetaVal);
         }
         System.out.println("theta: ");
+        theta.set(0, 0, 0.5);
+        theta.set(1, 0, 1);
+        theta.set(2, 0, 0.5);
         theta.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
     }
     public abstract Matrix doLinearRegression(); 
