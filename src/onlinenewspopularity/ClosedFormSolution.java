@@ -22,31 +22,9 @@ public class ClosedFormSolution extends LinearRegression {
 
     private static final Logger LOGGER = Logger.getLogger(ClosedFormSolution.class.getName());
     
-    private void selectTestSet() {
-        Random randomGen = new Random();
-        int size = theta.getRowDimension();
-        List used = new ArrayList<>();
-        
-        Matrix xCopy = x.copy();
-        x = new Matrix(size, size);
-        
-        for(int i = 0; i<size; i++) {
-            int k = randomGen.nextInt(size);
-            while(!used.isEmpty() && used.contains(k)) {
-                k = randomGen.nextInt(size);
-            }
-            
-            x.setMatrix(i, i, 0, size-1, xCopy.getMatrix(k, k, 0, size-1));
-            used.add(k);
-        }
-    }
-    
     @Override
     public Matrix doLinearRegression() {
         try{
-            //selectTestSet();
-            //x.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
-            //System.out.println("SIZE OF NEW X: " + x.getRowDimension() + "x" + x.getColumnDimension());
             Matrix transpose = x.transpose();
 
             Matrix prod = transpose.times(x);
