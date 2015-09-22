@@ -44,14 +44,15 @@ public class ClosedFormSolution extends LinearRegression {
     @Override
     public Matrix doLinearRegression() {
         try{
-            selectTestSet();
-            x.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
-            System.out.println("SIZE OF NEW X: " + x.getRowDimension() + "x" + x.getColumnDimension());
+            //selectTestSet();
+            //x.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+            //System.out.println("SIZE OF NEW X: " + x.getRowDimension() + "x" + x.getColumnDimension());
             Matrix transpose = x.transpose();
 
             Matrix prod = transpose.times(x);
             Matrix inv  = prod.inverse();
-            Matrix res = inv.times(y);
+            Matrix temp = inv.times(x.transpose());
+            Matrix res  = temp.times(y);
 
             res.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
             return res;

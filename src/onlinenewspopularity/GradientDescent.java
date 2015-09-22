@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class GradientDescent extends LinearRegression {
     private static final Logger LOGGER = Logger.getLogger(GradientDescent.class.getName());
     
-    private double alpha = 0.05;
+    private double alpha = 0.01;
 
     @Override
     public Matrix doLinearRegression() {
@@ -27,7 +27,7 @@ public class GradientDescent extends LinearRegression {
         
         //derivative();
         
-        for(int i = 0; i<10; i++) {
+        while(true) {
             updateTheta();
             Matrix check = thetaX().minus(y);
             double err = 0;
@@ -35,7 +35,7 @@ public class GradientDescent extends LinearRegression {
                 err = err + check.get(j, 0);
             }
             System.out.println("====ERR: " + err);
-            if(Math.abs(err) < 0.001) {
+            if(Math.abs(err) < 0.0000001) {
                 break;
             }
             //System.out.println("theta:" );
@@ -58,7 +58,7 @@ public class GradientDescent extends LinearRegression {
     private Matrix derivative() {
         Matrix err = thetaX().minus(y);
         
-        Matrix der = err.transpose().times(x).transpose();
+        Matrix der = x.transpose().times(err);
         /*for(int i = 0; i<Constants.SIZE; i++) {
             der.set(0, 0, der.get(0, 0) + (thetaX(i)-y.get(i, 0)));
         }

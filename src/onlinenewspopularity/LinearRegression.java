@@ -39,10 +39,7 @@ public abstract class LinearRegression {
             double thetaVal = (double)(randomNumGen.nextInt(rand_bound)+1)/rand_bound;
             theta.set(i, 0, thetaVal);
         }
-        System.out.println("theta: ");
-        theta.set(0, 0, 0.5);
-        theta.set(1, 0, 1);
-        theta.set(2, 0, 0.5);
+        System.out.println("initial theta: ");
         theta.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
     }
     public abstract Matrix doLinearRegression(); 
