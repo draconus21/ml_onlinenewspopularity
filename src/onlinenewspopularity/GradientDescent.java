@@ -6,7 +6,6 @@
 package onlinenewspopularity;
 
 import Jama.Matrix;
-import java.text.DecimalFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,56 +16,22 @@ import java.util.logging.Logger;
 public class GradientDescent extends LinearRegression {
     private static final Logger LOGGER = Logger.getLogger(GradientDescent.class.getName());
     
-    private double alpha = 0.0001;
-    private Matrix prevTheta;
+    private double alpha = 100;
     
     @Override
     public Matrix doLinearRegression() {
         try {
             System.out.println("==============START LINEAR REGRESSION==============");
-            Matrix res = x.times(theta);
-            double prevErr = 0;
-            double err = 0;
-            theta = new Matrix(new double[][]{{0.5}, {2}, {1}});
-            boolean first = true;
+            int itr = 0;
+            
             //while(true) {
-            for(int i = 0; i<10; i++) {
-                updateTheta();
-                Matrix check = thetaX().minus(y);
-                System.out.println("check matrix: " + check.getRowDimension() + "x" + check.getColumnDimension());
-                check.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
-                for(int j = 0; j<check.getRowDimension(); j++) {
-                    err = err + check.get(j, 0);
-                }
-                System.out.println("====ERR: " + err);
-                if(first) {
-                    prevErr = err;
-                    first = false;
-                }
-                
-                if(Math.abs(err) < 0.0000001) {
+            for(int i = 0; i<500; i++) {
+                if(updateTheta() < 0.0000001) {
                     break;
                 }
-                
-                /*if((err>0 && prevErr<0) || (err<0 && prevErr>0)) {
-                    alpha = alpha/10;
-                    System.out.println(alpha);
-                    LOGGER.info("prevError: " + prevErr + " | Error : " + err);
-                    LOGGER.log(Level.INFO, "Reducing alpha: {0}", (double)alpha);
-                    //theta.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
-                    theta = prevTheta;
-                    //theta.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
-                    
-                    //return doLinearRegression();
-                }/* else if(((prevErr - err)/err < 0.00001)) {
-                    alpha = alpha * 10;
-                    LOGGER.info(prevErr - err + " | prevError: " + prevErr + " | Error : " + err);
-                    LOGGER.log(Level.INFO, "Increasing alpha: {0}", (double)alpha);
-                    //return doLinearRegression();
-                }*/else {
-                    prevErr = err;
-                }
+                itr++;
             }
+            System.out.println("Iterations: " + itr);
             return theta;
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
@@ -74,28 +39,38 @@ public class GradientDescent extends LinearRegression {
         }
     }
     
-    private void updateTheta() {
+    private double updateTheta() {
         Matrix der = derivative();
-        prevTheta = theta;
-        System.out.println("der");
-        der.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
         
+        double err = getError(theta);
+        double nextErr = getError(theta.minus(der.times((double)alpha)));
+        
+        while (nextErr > err) {
+            alpha = alpha/3;
+            nextErr = getError(theta.minus(der.times((double)alpha)));
+        }
+        
+        System.out.println("Error: " + err);
         theta = theta.minus(der.times((double)alpha));
-        //System.out.println("new theta");
-        //theta.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+        return err;
+    }
+    
+    private double getError(Matrix theta) {
+        Matrix check = x.times(theta).minus(y);
+        Matrix cost  = check.transpose().times(check);
+                
+        return 0.5 * cost.get(0, 0)/Constants.SIZE;
     }
     
     private Matrix derivative() {
         Matrix err = thetaX().minus(y);
         Matrix der = x.transpose().times(err);
         der = der.times((double)1/Constants.SIZE);
-        der.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
         return der;
     }
     
     private Matrix thetaX() {
         Matrix res = x.times(theta);
         return res;
-        
     }
 }

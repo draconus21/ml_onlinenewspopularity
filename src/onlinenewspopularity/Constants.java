@@ -11,11 +11,11 @@ package onlinenewspopularity;
  */
 public class Constants {
     
-    public static final int SIZE = 4;
-    public static final int SPREAD = 7;
+    public static final int SIZE = 39644;
     
-    //public static final String INPUT_FILE = "data\\OnlineNewsPopularity.csv";
-    public static final String INPUT_FILE = "data\\test1.csv";
+    public static final String INPUT_FILE = "data\\OnlineNewsPopularity.csv";
+    //public static final String INPUT_FILE = "data\\ngData.csv";
+    //public static final String INPUT_FILE = "data\\test1.csv";
     public static final String NUMBER_FORMAT = "### ###.###;-#";
     public static final String FEATURE_COL1_NAME = "THETA_0";
 }
