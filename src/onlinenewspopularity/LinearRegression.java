@@ -37,7 +37,8 @@ public abstract class LinearRegression {
         int rand_bound = 1000;
         for(int i = 0; i < theta.getRowDimension(); i++) {
             double thetaVal = (double)(randomNumGen.nextInt(rand_bound)+1)/*/rand_bound*/;
-            theta.set(i, 0, thetaVal);
+            //theta.set(i, 0, thetaVal);
+            theta.set(i, 0, 0);
         }
         System.out.println("initial theta: ");
         theta.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);

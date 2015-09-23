@@ -9,6 +9,7 @@ import Jama.Matrix;
 import java.io.FileReader;
 import java.io.File;
 import java.io.Reader;
+import java.nio.CharBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -58,8 +59,8 @@ public class DataFormatter {
                 int featureCount = 0;
                 
                 for(int i = 0; i<trainMinMax[0].length; i++) {
-                    trainMinMax[0][i] = Double.MAX_VALUE;   //Min Value of feature i
-                    trainMinMax[1][i] = Double.MIN_VALUE;   //Max Value of feature i
+                    trainMinMax[0][i] = Double.MAX_VALUE;   //Obsolete--Min Value of feature i
+                    trainMinMax[1][i] = Double.MIN_VALUE;   //Std Deviation of feature i
                     trainMinMax[2][i] = 0;                  //Avg Value of feature i
                     normalize[i]      = Boolean.FALSE;      //No nomramlisation required by default
                     validFeature[i]   = Boolean.FALSE;      //Not a valid feature by default
@@ -92,17 +93,8 @@ public class DataFormatter {
                                 }
                             }
                             
-                            if(j != features.size()) {          //skip normalisation 
-                                                                //check for predict column
-                                    if(value < trainMinMax[0][j]) {
-                                        trainMinMax[0][j] = value;
-                                    }
-                                    if(value > trainMinMax[1][j]) {
-                                        trainMinMax[1][j] = value;
-                                    }
-                                    
+                            if(j != features.size()) {
                                     trainMinMax[2][j] = (trainMinMax[2][j] * (i) + value ) / (i+1);
-                                    
                                 }
                         }
                     } else {
@@ -111,9 +103,17 @@ public class DataFormatter {
                     i++;
                 }
                 
+                for(int j = 1; j<features.size(); j++) {
+                    double var = 0.0;
+                    for(i = 0; i<data.length; i++) {
+                        var = var + (data[i][j] - trainMinMax[2][j]) * (data[i][j]-trainMinMax[2][j]);
+                    }
+                    trainMinMax[1][j] = Math.sqrt(var/Constants.SIZE);
+                }
+                
                 //Normalization check
-                for(i = 0; i<features.size(); i++) {
-                    if(trainMinMax[0][i] < (-1*Constants.SPREAD)|| //Perform Normalization if 
+                for(i = 1; i<features.size(); i++) {                //Do not normalize feature_0
+                    if(trainMinMax[0][i] < (-1*Constants.SPREAD)||  //Perform Normalization if 
                        trainMinMax[1][i] > Constants.SPREAD) {      //the data is spread out
                         normalize[i] = Boolean.TRUE;
                     }
@@ -121,17 +121,14 @@ public class DataFormatter {
                 
                 //Perform normalisation 
                 for(i = 0; i<Constants.SIZE; i++) {
-                    for(int j = 0; j<data[i].length; j++) {
-                        if(normalize[j] == Boolean.TRUE) {
-                            double range = Math.abs(trainMinMax[1][j] - trainMinMax[0][j]);
-                            data[i][j] = (data[i][j]-trainMinMax[2][j])/range;
-                        }
+                    for(int j = 1; j<data[i].length; j++) {
+                            data[i][j] = (data[i][j]-trainMinMax[2][j])/trainMinMax[1][j];
                     }
                 }
                 
                 //Remove empty features
                 if(featureCount < features.size()) {
-                    List featuresCopy = new ArrayList<String>();
+                    List featuresCopy = new ArrayList<>();
                     featuresCopy.addAll(features);
                     double[][] newData = new double[Constants.SIZE][featureCount];
                     int k = 0;
