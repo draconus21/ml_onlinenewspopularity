@@ -9,8 +9,6 @@ import Jama.Matrix;
 import java.io.FileReader;
 import java.io.File;
 import java.io.Reader;
-import java.nio.CharBuffer;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +26,8 @@ public class DataFormatter {
     
     private static final Logger LOGGER = Logger.getLogger(DataFormatter.class.getName());
     
-    private final String fileName;
+    private final String     fileName;
+    private       double[][] trainStat;
     
     public DataFormatter(String fileName) {
         this.fileName = fileName;
@@ -51,21 +50,20 @@ public class DataFormatter {
                 }
                 predictColName = header.get((header.size()-1)).trim();
                 
-                double[][] data = new double [Constants.SIZE][features.size()];
-                double[][] res  = new double [Constants.SIZE][1];
-                double[][] trainMinMax = new double[3][features.size()];
-                boolean[] normalize = new boolean[features.size()];
-                boolean[] validFeature = new boolean[features.size()];
-                int featureCount = 0;
+                trainStat = new double [2][features.size()];
                 
-                for(int i = 0; i<trainMinMax[0].length; i++) {
-                    trainMinMax[0][i] = Double.MAX_VALUE;   //Obsolete--Min Value of feature i
-                    trainMinMax[1][i] = Double.MIN_VALUE;   //Std Deviation of feature i
-                    trainMinMax[2][i] = 0;                  //Avg Value of feature i
-                    normalize[i]      = Boolean.FALSE;      //No nomramlisation required by default
-                    validFeature[i]   = Boolean.FALSE;      //Not a valid feature by default
+                double [][] data         = new double [Constants.SIZE][features.size()];
+                double [][] res          = new double [Constants.SIZE][1];
+                boolean[]   validFeature = new boolean[features.size()];
+                int         featureCount = 1;
+                
+                for(int i = 0; i<trainStat[0].length; i++) {
+                    trainStat   [0][i] = 0;                       //Avg Value of feature i
+                    trainStat   [1][i] = 0;                       //Std Deviation of feature i
+                    validFeature[i]    = Boolean.FALSE;           //Not a valid feature by default
                 }
                 
+                validFeature[0] = Boolean.TRUE;     //theta_0 is a valid feature
                 int i=0;
                 for(CSVRecord record : records) {
                     if(i<Constants.SIZE) {
@@ -74,10 +72,6 @@ public class DataFormatter {
                             if(j == 0) {
                                 data[i][j] = 1.0;
                                 value = data [i][j];
-                                if(validFeature[j] == Boolean.FALSE) {
-                                    featureCount++;
-                                }
-                                validFeature[j] = Boolean.TRUE;
                             } else if(j == features.size()) {
                                 res[i][0] = Double.parseDouble(record.get(record.size()-1));
                                 value = res[i][0];
@@ -87,15 +81,14 @@ public class DataFormatter {
                                 if(value != 0) {
                                     if(validFeature[j] == Boolean.FALSE) {
                                         featureCount++;
+                                        validFeature[j] = Boolean.TRUE;
                                     }
-                                    validFeature[j] = Boolean.TRUE;
-                                    
                                 }
                             }
                             
                             if(j != features.size()) {
-                                    trainMinMax[2][j] = (trainMinMax[2][j] * (i) + value ) / (i+1);
-                                }
+                                trainStat[0][j] = (trainStat[0][j] * (i) + value ) / (i+1);
+                            }
                         }
                     } else {
                         break;
@@ -103,30 +96,25 @@ public class DataFormatter {
                     i++;
                 }
                 
+                //Calculate Standard Deviation for the features (excluding theta_0)
                 for(int j = 1; j<features.size(); j++) {
                     double var = 0.0;
                     for(i = 0; i<data.length; i++) {
-                        var = var + (data[i][j] - trainMinMax[2][j]) * (data[i][j]-trainMinMax[2][j]);
+                        var = var + (data[i][j] - trainStat[0][j]) * (data[i][j]-trainStat[0][j]);
                     }
-                    trainMinMax[1][j] = Math.sqrt(var/Constants.SIZE);
-                }
-                
-                //Normalization check
-                for(i = 1; i<features.size(); i++) {                //Do not normalize feature_0
-                    if(trainMinMax[0][i] < (-1*Constants.SPREAD)||  //Perform Normalization if 
-                       trainMinMax[1][i] > Constants.SPREAD) {      //the data is spread out
-                        normalize[i] = Boolean.TRUE;
-                    }
+                    trainStat[1][j] = Math.sqrt(var/Constants.SIZE);
                 }
                 
                 //Perform normalisation 
+                LOGGER.log(Level.INFO, "Normalizing training data");
                 for(i = 0; i<Constants.SIZE; i++) {
                     for(int j = 1; j<data[i].length; j++) {
-                            data[i][j] = (data[i][j]-trainMinMax[2][j])/trainMinMax[1][j];
+                            data[i][j] = (data[i][j]-trainStat[0][j])/trainStat[1][j];
                     }
                 }
                 
                 //Remove empty features
+                LOGGER.log(Level.INFO, "Removing empty features columns");
                 if(featureCount < features.size()) {
                     List featuresCopy = new ArrayList<>();
                     featuresCopy.addAll(features);
@@ -163,5 +151,9 @@ public class DataFormatter {
             LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
             throw e;
         }
+    }
+    
+    public double[][] getDataStat() {
+        return trainStat;
     }
 }
