@@ -37,6 +37,7 @@ public class OnlineNewsPopularity {
             for(int i = 0; i<features.size(); i++) {
                 System.out.print(features.get(i) + " | ");
             }
+            System.out.println();
             System.out.println("Data set:");
             //data.print(new DecimalFormat(Constants.NUMBER_FORMAT), 8);
             System.out.println("y:");
@@ -46,13 +47,15 @@ public class OnlineNewsPopularity {
             //LinearRegression lr = new ClosedFormSolution();
             LinearRegression lr = new GradientDescent();
             lr.init(data, y);
+            
             Matrix res = lr.doLinearRegression();
-            int trial = 0;
-            while(res == null && trial < 0) {
-                res = lr.doLinearRegression();
-                trial++;
-            }
+            
+            System.out.println();
+            System.out.println("FINAL THETA:");
             res.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+            
+            System.out.println("\n prediction:");
+            lr.predict(data).print(new DecimalFormat(), 5);
             
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});

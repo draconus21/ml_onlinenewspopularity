@@ -57,9 +57,7 @@ public class DataFormatter {
                 boolean[]   validFeature = new boolean[features.size()];
                 int         featureCount = 1;
                 
-                for(int i = 0; i<trainStat[0].length; i++) {
-                    trainStat   [0][i] = 0;                       //Avg Value of feature i
-                    trainStat   [1][i] = 0;                       //Std Deviation of feature i
+                for(int i = 0; i<validFeature.length; i++) {
                     validFeature[i]    = Boolean.FALSE;           //Not a valid feature by default
                 }
                 
@@ -71,23 +69,16 @@ public class DataFormatter {
                             double value;
                             if(j == 0) {
                                 data[i][j] = 1.0;
-                                value = data [i][j];
                             } else if(j == features.size()) {
                                 res[i][0] = Double.parseDouble(record.get(record.size()-1));
-                                value = res[i][0];
                             } else {
                                 data[i][j] = Double.parseDouble(record.get(j+1));
-                                value = data[i][j];
-                                if(value != 0) {
+                                if(data[i][j] != 0) {
                                     if(validFeature[j] == Boolean.FALSE) {
                                         featureCount++;
                                         validFeature[j] = Boolean.TRUE;
                                     }
                                 }
-                            }
-                            
-                            if(j != features.size()) {
-                                trainStat[0][j] = (trainStat[0][j] * (i) + value ) / (i+1);
                             }
                         }
                     } else {
@@ -96,25 +87,7 @@ public class DataFormatter {
                     i++;
                 }
                 
-                //Calculate Standard Deviation for the features (excluding theta_0)
-                for(int j = 1; j<features.size(); j++) {
-                    double var = 0.0;
-                    for(i = 0; i<data.length; i++) {
-                        var = var + (data[i][j] - trainStat[0][j]) * (data[i][j]-trainStat[0][j]);
-                    }
-                    trainStat[1][j] = Math.sqrt(var/Constants.SIZE);
-                }
-                
-                //Perform normalisation 
-                LOGGER.log(Level.INFO, "Normalizing training data");
-                for(i = 0; i<Constants.SIZE; i++) {
-                    for(int j = 1; j<data[i].length; j++) {
-                            data[i][j] = (data[i][j]-trainStat[0][j])/trainStat[1][j];
-                    }
-                }
-                
                 //Remove empty features
-                LOGGER.log(Level.INFO, "Removing empty features columns");
                 if(featureCount < features.size()) {
                     List featuresCopy = new ArrayList<>();
                     featuresCopy.addAll(features);
