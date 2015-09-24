@@ -6,8 +6,6 @@
 package onlinenewspopularity;
 
 import Jama.Matrix;
-import java.text.DecimalFormat;
-import java.util.Random;
 
 /**
  * This abstract class defines the structure for Linear Regression classes
@@ -29,10 +27,9 @@ public abstract class LinearRegression {
                     " | Y: "  + y.getRowDimension() + "x" + y.getColumnDimension());
         }
         theta = new Matrix(features,1, 0.0);
-        System.out.println("initial theta: ");
-        theta.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
     }
     
     public abstract Matrix doLinearRegression(); 
+    public abstract Matrix predict(Matrix data);
     
 }
