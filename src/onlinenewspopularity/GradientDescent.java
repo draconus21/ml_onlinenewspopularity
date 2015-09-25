@@ -21,6 +21,7 @@ public class GradientDescent extends LinearRegression {
     private int m;
     
     private double alpha = 100;
+    private double lambda = 100;
     private double[] mean;
     private double[] std;
     private Matrix cvX;
@@ -101,14 +102,17 @@ public class GradientDescent extends LinearRegression {
     private double getError(Matrix x, Matrix y, Matrix theta) {
         Matrix check = x.times(theta).minus(y);
         Matrix cost  = check.transpose().times(check);
-                
-        return 0.5 * cost.get(0, 0)/trainLen;
+        Matrix reg   = theta.transpose().times(theta);
+        
+        return 0.5 * (cost.get(0, 0) + lambda * reg.get(0, 0))/trainLen;
     }
     
     private Matrix derivative() {
         Matrix err = thetaX().minus(y);
         Matrix der = x.transpose().times(err);
+        der = der.plus(theta.times(lambda));
         der = der.times((double)1/trainLen);
+        
         return der;
     }
     

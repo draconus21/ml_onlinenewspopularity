@@ -55,7 +55,7 @@ public class OnlineNewsPopularity {
             res.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
             
             System.out.println("\n prediction:");
-            lr.predict(data).print(new DecimalFormat(), 5);
+            //lr.predict(data).print(new DecimalFormat(), 5);
             
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
