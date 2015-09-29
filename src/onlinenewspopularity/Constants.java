@@ -12,7 +12,8 @@ package onlinenewspopularity;
 public class Constants {
     
     public static final int    SIZE = 39644;
-    public static final double CROSS_VALIDATOIN_RATIO = 0.3;
+    public static final double CROSS_VALIDATOIN_RATIO = 0.2;
+    public static final double TEST_SET_RATIO         = 0.2;
     
     public static final String INPUT_FILE = "data\\OnlineNewsPopularity.csv";
     //public static final String INPUT_FILE = "data\\ngData.csv";
