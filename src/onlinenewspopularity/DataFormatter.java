@@ -12,6 +12,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.csv.CSVFormat;
@@ -61,19 +62,26 @@ public class DataFormatter {
                     validFeature[i]    = Boolean.FALSE;           //Not a valid feature by default
                 }
                 
+                List indices = new ArrayList<>();
+                int n = Constants.SIZE;
+                for(int i=0; i<n; i++) {
+                    indices.add(i);
+                }
+                Random randGen = new Random();
+                
                 validFeature[0] = Boolean.TRUE;     //theta_0 is a valid feature
                 int i=0;
                 for(CSVRecord record : records) {
-                    if(i<Constants.SIZE) {
+                    if(i<Constants.SIZE && !indices.isEmpty()) {
+                        int index = (int)indices.get(randGen.nextInt(indices.size()));
                         for(int j = 0; j<=features.size(); j++) {
-                            double value;
                             if(j == 0) {
-                                data[i][j] = 1.0;
+                                data[index][j] = 1.0;
                             } else if(j == features.size()) {
-                                res[i][0] = Double.parseDouble(record.get(record.size()-1));
+                                res[index][0] = Double.parseDouble(record.get(record.size()-1));
                             } else {
-                                data[i][j] = Double.parseDouble(record.get(j+1));
-                                if(data[i][j] != 0) {
+                                data[index][j] = Double.parseDouble(record.get(j+1));
+                                if(data[index][j] != 0) {
                                     if(validFeature[j] == Boolean.FALSE) {
                                         featureCount++;
                                         validFeature[j] = Boolean.TRUE;
@@ -81,6 +89,7 @@ public class DataFormatter {
                                 }
                             }
                         }
+                        indices.remove((Object)index);
                     } else {
                         break;
                     }
@@ -109,14 +118,19 @@ public class DataFormatter {
                     data = newData;
                 }
                 
+                int testLen = (int)(Constants.TEST_SET_RATIO * Constants.SIZE);
+                int trainLen = Constants.SIZE - testLen;
+                
                 Matrix tmpx = new Matrix(data);
                 Matrix tmpy = new Matrix(res);
-               
+                
                 List temp = new ArrayList<>();
                 temp.add(features);
                 temp.add(predictColName);
-                temp.add(tmpx);
-                temp.add(tmpy);
+                temp.add(tmpx.getMatrix(0,        trainLen-1,               0, tmpx.getColumnDimension()-1));
+                temp.add(tmpy.getMatrix(0,        trainLen-1,               0, tmpy.getColumnDimension()-1));
+                temp.add(tmpx.getMatrix(trainLen, tmpx.getRowDimension()-1, 0, tmpx.getColumnDimension()-1));
+                temp.add(tmpy.getMatrix(trainLen, tmpy.getRowDimension()-1, 0, tmpy.getColumnDimension()-1));
                 
                 return temp;
             }
@@ -125,6 +139,32 @@ public class DataFormatter {
             throw e;
         }
     }
+    
+    /*private void shuffle(Matrix x, Matrix y) {
+        try {
+            List indices = new ArrayList<>();
+            int n = x.getRowDimension();
+            for(int i=0; i<n; i++) {
+                indices.add(i);
+            }
+            Matrix randX = new Matrix(x.getRowDimension(), x.getColumnDimension());
+            Matrix randY = new Matrix(y.getRowDimension(), y.getColumnDimension());
+            
+            Random randGen = new Random();
+            int i=0;
+            while(!indices.isEmpty() && i<randX.getRowDimension()) {
+                int index = (int)indices.get(randGen.nextInt(indices.size()));
+                randX.setMatrix(i, i, 0, this.m-1, this.x.getMatrix(index, index, 0, this.m-1));
+                randY.setMatrix(i, i, 0, 0,        this.y.getMatrix(index, index, 0, y.getColumnDimension()-1));
+                indices.remove((Object)index);
+                i++;
+            }
+            LOGGER.log(Level.INFO, "Randomized data set");
+        }  catch (Exception e) {
+            LOGGER.log(Level.SEVERE, e.getClass().getName() + ": " + e.getMessage(), e);
+            throw e;
+        }
+    }*/
     
     public double[][] getDataStat() {
         return trainStat;
