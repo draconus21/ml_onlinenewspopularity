@@ -84,14 +84,8 @@ public class OnlineNewsPopularity {
             System.out.println("\nprediction:");
             if(testx.getRowDimension() > 0) {
                 Matrix prediction = lr.predict(testx);
-                //prediction.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
-                double sum = 0;
-                for(int i = 0; i<prediction.getRowDimension(); i++) {
-                    System.out.println(prediction.get(i, 0) + " | " + testy.get(i, 0));
-                    sum = sum + Math.pow(prediction.get(i, 0) - testy.get(i, 0), 2);
-                    System.out.println(sum);
-                }
-                System.out.println("Error in prediction: " + sum/testy.getRowDimension() + " | " + getError(testx, testy, res));
+                prediction.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+                System.out.println("Error in prediction: " + getError(testx, testy, res));
                 featureSelector(res, features);
             } else {
                 LOGGER.log(Level.INFO, "No test set available");
