@@ -36,6 +36,17 @@ public class OnlineNewsPopularity {
             Matrix testx = (Matrix)testSet.get(4);
             Matrix testy = (Matrix)testSet.get(5);
             
+            data.print(new DecimalFormat(), 5);
+            
+            List featureIndices = new ArrayList<>();
+            for(int i = 0; i<features.size()-1; i++) {
+                featureIndices = new ArrayList<>();
+                featureIndices.add(i);
+                featureIndices.add((i+2) % features.size());
+                df.resetData(data, y, featureIndices, features, predictColName);
+            }
+            //df.writeDataSetToFile("data\\testData.csv", features, predictColName, testx, testy);
+            
             /*System.out.println("data: " + data.getRowDimension() + " | " + y.getRowDimension());
             
             //print data that has been read
@@ -60,6 +71,7 @@ public class OnlineNewsPopularity {
              * Perform Linear Regression
              */
             //LinearRegression lr = new ClosedFormSolution();
+            
             LinearRegression lr = new GradientDescent();
             lr.init(data, y);
             
@@ -72,15 +84,31 @@ public class OnlineNewsPopularity {
             System.out.println("\nprediction:");
             if(testx.getRowDimension() > 0) {
                 Matrix prediction = lr.predict(testx);
-                prediction.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
-                System.out.println("Error in prediction: " + (prediction.minus(testy).transpose().times(prediction.minus(testy))).get(0, 0)/prediction.getRowDimension());
+                //prediction.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+                double sum = 0;
+                for(int i = 0; i<prediction.getRowDimension(); i++) {
+                    System.out.println(prediction.get(i, 0) + " | " + testy.get(i, 0));
+                    sum = sum + Math.pow(prediction.get(i, 0) - testy.get(i, 0), 2);
+                    System.out.println(sum);
+                }
+                System.out.println("Error in prediction: " + sum/testy.getRowDimension() + " | " + getError(testx, testy, res));
+                
             } else {
                 LOGGER.log(Level.INFO, "No test set available");
             }
+            
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
             e.printStackTrace();
         }
+    }
+    
+    public static double getError(Matrix localx, Matrix localy, Matrix localtheta) {
+        Matrix check = localx.times(localtheta).minus(localy);
+        Matrix cost  = check.transpose().times(check);
+        Matrix reg   = localtheta.transpose().times(localtheta);
+        
+        return 0.5 * (cost.get(0, 0))/localx.getRowDimension();
     }
     
     /**
@@ -100,15 +128,28 @@ public class OnlineNewsPopularity {
             throw e;
         }
     }
+    
+    /*private List featureAnalyzer(Matrix theta, List features) {
+        try {
+            List featureIndices = new ArrayList<>();
+            List newFeatures    = new ArrayList<>();
+            
+            
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
+            throw e;
+        }
+    }*/
+    
     /**
      * This is used to determine which features to use for part 2 of the assignment
      * @param res
      * @param features
      * @throws IOException 
      */
-    private void featureSelector(Matrix res, List features) throws IOException {
+    private List featureSelector(Matrix res, List features) throws IOException {
         FileWriter fw = new FileWriter(new File("featureList.csv"));
-            
+        
         fw.write("Feature Number,FeatureName,Weight\n");
         System.out.println("validFeatures:");
         int nF = 0;

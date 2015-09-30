@@ -55,7 +55,7 @@ public class GradientDescent extends LinearRegression {
         }
         setCrossValidationPartitions(Constants.CROSS_VALIDATOIN_RATIO);
         setData(0);
-        //normalize(this.x);
+        normalize(this.x);
         LOGGER.log(Level.INFO, "Training dataset size: {0}", trainLen);
         LOGGER.log(Level.INFO, "Crossvalidation dataset size: {0}", crossLen);
     }
@@ -182,7 +182,7 @@ public class GradientDescent extends LinearRegression {
      * @param localtheta
      * @return Cost
      */
-    private double getError(Matrix localx, Matrix localy, Matrix localtheta) {
+    public double getError(Matrix localx, Matrix localy, Matrix localtheta) {
         Matrix check = localx.times(localtheta).minus(localy);
         Matrix cost  = check.transpose().times(check);
         Matrix reg   = localtheta.transpose().times(localtheta);

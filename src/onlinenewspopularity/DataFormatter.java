@@ -8,7 +8,9 @@ package onlinenewspopularity;
 import Jama.Matrix;
 import java.io.FileReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.Reader;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -155,6 +157,80 @@ public class DataFormatter {
             throw e;
         }
     }
+    
+    public List resetData(Matrix data, Matrix res, List featureIndices, List features, String predictColumn) {
+        try {
+            int n = data.getRowDimension();
+            Matrix newData   = new Matrix(n, featureIndices.size());
+            Matrix newRes    = new Matrix(n, 1);
+            List newFeatures = new ArrayList<>();
+            
+            for(int i = 0; i<featureIndices.size(); i++) {
+                newFeatures.add(features.get((int)featureIndices.get(i)));
+                System.out.println(newFeatures.get(i));
+            }
+            
+            List indices = new ArrayList<>();
+            for(int i=0; i<n; i++) {
+                indices.add(i);
+            }
+            Random randGen = new Random();
+                
+            for(int i = 0; i<data.getRowDimension(); i++) {
+                int index = (int)indices.get(randGen.nextInt(indices.size()));
+                int k = 0;
+                for(int j = 0; j<data.getColumnDimension(); j++) {
+                    if(featureIndices.contains((Object)j)) {
+                        newData.set(index, k, data.get(i, j));
+                        k++;
+                    }
+                }
+                newRes.set(index, 0, res.get(i, 0));
+                indices.remove((Object)index);
+            }
+            
+            List temp = new ArrayList();
+            temp.add(newFeatures);
+            temp.add(predictColumn);
+            temp.add(newData);
+            temp.add(newRes);
+            
+            return temp;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
+            throw e;
+        }
+    }
+    public void writeDataSetToFile(String fileName, List features, String predicColumn, Matrix mat1, Matrix mat2) throws Exception {
+        try(FileWriter fw = new FileWriter(new File(fileName))) {
+            if(mat1.getColumnDimension() != features.size()) {
+                throw new Exception("Number of headers and data columns do not "
+                        + "match. headers: " + features.size() + " | columns" + 
+                        mat1.getColumnDimension());
+            }
+            
+            StringBuilder line = new StringBuilder();
+            for(int i = 0; i<features.size(); i++) {
+               line.append(features.get(i)).append(",");
+            }
+            line.append(predicColumn).append("\n");
+            fw.write(line.toString());
+            for(int i = 0; i<mat1.getRowDimension(); i++) {
+                line = new StringBuilder();
+                fw.flush();
+                for(int j = 0; j<mat1.getColumnDimension(); j++) {
+                    line.append(mat1.get(i, j)).append(",");
+                }
+                line.append(mat2.get(i, 0)).append("\n");
+                fw.write(line.toString());
+            }
+            LOGGER.log(Level.INFO, "Data written to {0}", fileName);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
+            throw e;
+        }
+    }
+    
     public double[][] getDataStat() {
         return trainStat;
     }
