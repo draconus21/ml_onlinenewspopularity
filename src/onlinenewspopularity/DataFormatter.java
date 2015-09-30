@@ -10,7 +10,6 @@ import java.io.FileReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Reader;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -120,6 +119,7 @@ public class DataFormatter {
                     featuresCopy.addAll(features);
                     double[][] newData = new double[Constants.SIZE][featureCount];
                     int k = 0;
+                    int var = 0;
                     
                     for(int j = 0; j<featuresCopy.size(); j++) {
                         if(validFeature[j] == Boolean.TRUE) {
@@ -128,8 +128,9 @@ public class DataFormatter {
                             } 
                             k++;
                         } else {
-                            LOGGER.log(Level.INFO, "Removing empty feature: {0}", features.get(j));
-                            features.remove(j);
+                            LOGGER.log(Level.INFO, "Removing empty feature: {0}", features.get(j - var));
+                            features.remove(j - var);
+                            var++;
                         }
                     }
                     
@@ -167,7 +168,6 @@ public class DataFormatter {
             
             for(int i = 0; i<featureIndices.size(); i++) {
                 newFeatures.add(features.get((int)featureIndices.get(i)));
-                System.out.println(newFeatures.get(i));
             }
             
             List indices = new ArrayList<>();

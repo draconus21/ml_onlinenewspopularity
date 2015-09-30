@@ -36,7 +36,7 @@ public class OnlineNewsPopularity {
             Matrix testx = (Matrix)testSet.get(4);
             Matrix testy = (Matrix)testSet.get(5);
             
-            data.print(new DecimalFormat(), 5);
+            //data.print(new DecimalFormat(), 5);
             
             List featureIndices = new ArrayList<>();
             for(int i = 0; i<features.size()-1; i++) {
@@ -92,7 +92,7 @@ public class OnlineNewsPopularity {
                     System.out.println(sum);
                 }
                 System.out.println("Error in prediction: " + sum/testy.getRowDimension() + " | " + getError(testx, testy, res));
-                
+                featureSelector(res, features);
             } else {
                 LOGGER.log(Level.INFO, "No test set available");
             }
@@ -147,7 +147,7 @@ public class OnlineNewsPopularity {
      * @param features
      * @throws IOException 
      */
-    private List featureSelector(Matrix res, List features) throws IOException {
+    private static void featureSelector(Matrix res, List features) throws IOException {
         FileWriter fw = new FileWriter(new File("featureList.csv"));
         
         fw.write("Feature Number,FeatureName,Weight\n");
