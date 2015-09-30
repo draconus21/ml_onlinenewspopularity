@@ -36,7 +36,8 @@ public class OnlineNewsPopularity {
             Matrix y     = (Matrix)testSet.get(3);
             Matrix testx = (Matrix)testSet.get(4);
             Matrix testy = (Matrix)testSet.get(5);
-            System.out.println("data: " + data.getRowDimension() + " | " + y.getRowDimension());
+            
+            /*System.out.println("data: " + data.getRowDimension() + " | " + y.getRowDimension());
             
             //print data that has been read
             System.out.println("predict: " + predictColName);
@@ -44,6 +45,7 @@ public class OnlineNewsPopularity {
             for(int i = 0; i<features.size(); i++) {
                 System.out.print(features.get(i) + " | ");
             }
+            
             System.out.println();
             System.out.println("Data set:");
             //data.print(new DecimalFormat(Constants.NUMBER_FORMAT), 8);
@@ -51,8 +53,11 @@ public class OnlineNewsPopularity {
             System.out.println("y:");
             //y.print(new DecimalFormat(Constants.NUMBER_FORMAT), 8);
             //testy.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+            */
             
-            //Perform Linear Regression
+            /**
+             * Perform Linear Regression
+             */
             //LinearRegression lr = new ClosedFormSolution();
             LinearRegression lr = new GradientDescent();
             lr.init(data, y);
@@ -63,11 +68,10 @@ public class OnlineNewsPopularity {
             System.out.println("FINAL THETA:");
             res.print(new DecimalFormat(), 5);
             
-            System.out.println("\n prediction:");
-            //data.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+            System.out.println("\nprediction:");
             if(testx.getRowDimension() > 0) {
                 Matrix prediction = lr.predict(testx);
-                //prediction.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
+                prediction.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
                 System.out.println("Error in prediction: " + (prediction.minus(testy).transpose().times(prediction.minus(testy))).get(0, 0)/prediction.getRowDimension());
             } else {
                 LOGGER.log(Level.INFO, "No test set available");
@@ -78,6 +82,12 @@ public class OnlineNewsPopularity {
         }
     }
     
+    /**
+     * This is used to determine which features to use for part 2 of the assignment
+     * @param res
+     * @param features
+     * @throws IOException 
+     */
     private void featureSelector(Matrix res, List features) throws IOException {
         FileWriter fw = new FileWriter(new File("featureList.csv"));
             
