@@ -20,7 +20,7 @@ import org.apache.commons.csv.CSVRecord;
 
 /**
  * This class reads data from a file and creates feature list, prediction column,
- * and test data
+ * training data and test data
  * @author neeth
  */
 public class DataFormatter {
@@ -34,6 +34,22 @@ public class DataFormatter {
         this.fileName = fileName;
     }
     
+    /**
+     * Reads the file and randomly populates the data
+     * @return matrix list
+     * The list has the following elements:
+     * 1. List of features (mx1 ArrayList)
+     * 2. Target column name
+     * 3. Data for training (n1xm matrix)
+     * 4. Target values for training data (n1x1 matrix)
+     * 5. Test data (nxm matrix)
+     * 6. Target values for test data (n2x2 matrix)
+     * NOTE: n1 is the length of training data set.
+     *       n2 is the length of test data set.
+     *       n2 = Constants.SIZE*Constants.TEST_SET_RATIO
+     *       n1 = Constants.SIZE-n2
+     * @throws Exception 
+     */
     public List<Matrix> readData() throws Exception {
         try {
             try (Reader br = new FileReader(new File(fileName))) {
@@ -46,7 +62,7 @@ public class DataFormatter {
                 CSVRecord header = itr.next();
                 
                 features.add(Constants.FEATURE_COL1_NAME);
-                for(int i=2; i<header.size()-1; i++) {
+                for(int i=Constants.INITIAL_FEATURE_INDEX; i<header.size()-1; i++) {
                     features.add(header.get(i).trim());
                 }
                 predictColName = header.get((header.size()-1)).trim();
@@ -80,7 +96,7 @@ public class DataFormatter {
                             } else if(j == features.size()) {
                                 res[index][0] = Double.parseDouble(record.get(record.size()-1));
                             } else {
-                                data[index][j] = Double.parseDouble(record.get(j+1));
+                                data[index][j] = Double.parseDouble(record.get(j+Constants.INITIAL_FEATURE_INDEX-1));
                                 if(data[index][j] != 0) {
                                     if(validFeature[j] == Boolean.FALSE) {
                                         featureCount++;
@@ -139,33 +155,6 @@ public class DataFormatter {
             throw e;
         }
     }
-    
-    /*private void shuffle(Matrix x, Matrix y) {
-        try {
-            List indices = new ArrayList<>();
-            int n = x.getRowDimension();
-            for(int i=0; i<n; i++) {
-                indices.add(i);
-            }
-            Matrix randX = new Matrix(x.getRowDimension(), x.getColumnDimension());
-            Matrix randY = new Matrix(y.getRowDimension(), y.getColumnDimension());
-            
-            Random randGen = new Random();
-            int i=0;
-            while(!indices.isEmpty() && i<randX.getRowDimension()) {
-                int index = (int)indices.get(randGen.nextInt(indices.size()));
-                randX.setMatrix(i, i, 0, this.m-1, this.x.getMatrix(index, index, 0, this.m-1));
-                randY.setMatrix(i, i, 0, 0,        this.y.getMatrix(index, index, 0, y.getColumnDimension()-1));
-                indices.remove((Object)index);
-                i++;
-            }
-            LOGGER.log(Level.INFO, "Randomized data set");
-        }  catch (Exception e) {
-            LOGGER.log(Level.SEVERE, e.getClass().getName() + ": " + e.getMessage(), e);
-            throw e;
-        }
-    }*/
-    
     public double[][] getDataStat() {
         return trainStat;
     }

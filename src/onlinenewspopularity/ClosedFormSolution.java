@@ -18,11 +18,23 @@ public class ClosedFormSolution extends LinearRegression {
 
     private static final Logger LOGGER = Logger.getLogger(ClosedFormSolution.class.getName());
     
+    /**
+     * Predicts the target values for give data
+     * @param data is an nxm matrix with data for prediction
+     * @return an nx1 matrix with target values
+     * NOTE: n is the number of data available for predictions and m is the
+     * number of features.
+     */
     @Override
     public Matrix predict(Matrix data) {
         return data.times(theta);
     }
     
+    /**
+     * Gives the closed form solution for the data set
+     * @return mx1 matrix of trained weights
+     * NOTE: m is the number of features in training data
+     */
     @Override
     public Matrix doLinearRegression() {
         try{

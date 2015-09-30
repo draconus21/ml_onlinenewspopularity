@@ -10,7 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * This class extends LinearRegression to perform Gradient Descent
+ * This function dynamically adjusts alpha to prevent the cost from diverging
  * @author neeth
  */
 public class GradientDescent extends LinearRegression {
@@ -33,24 +34,41 @@ public class GradientDescent extends LinearRegression {
     private Matrix trainX;
     private Matrix trainY;
     
+    /**
+     * Does few preprocessing steps for gradient descent
+     * 1. Decides blocks for cross validation
+     * 2. Normalizes data
+     * @param x is the data available for training. It is an nxm matrix.
+     * NOTE: This does not include test data
+     * @param y is the target values for training data. It is an nx1 matrix.
+     * Here n is the number of training examples and m is the number of features
+     * @throws Exception 
+     */
     @Override
     public void init (Matrix x, Matrix y) throws Exception {
         super.init(x, y);
         m = x.getColumnDimension();
         n = x.getRowDimension();
         mean = new double[m];
-        std = new double[m];
+        std  = new double[m];
         for(int i = 0; i<m; i++) {
-            std[i] = 1;
+            std[i]  = 1;
             mean[i] = 0;
         }
         setCrossValidationPartitions(Constants.CROSS_VALIDATOIN_RATIO);
         setData(0);
-        //normalize(this.x);
+        normalize(this.x);
         LOGGER.log(Level.INFO, "Training dataset size: {0}", trainLen);
         LOGGER.log(Level.INFO, "Crossvalidation dataset size: {0}", crossLen);
     }
     
+    /**
+     * Predicts the target values for give data
+     * @param data is an nxm matrix with data for prediction
+     * @return an nx1 matrix with target values
+     * NOTE: n is the number of data available for predictions and m is the
+     * number of features.
+     */
     @Override
     public Matrix predict(Matrix data) {
         for(int i = 0; i<data.getRowDimension(); i++) {
@@ -62,10 +80,17 @@ public class GradientDescent extends LinearRegression {
         return data.times(theta);
     }
     
+    /**
+     * Performs Gradient Descent
+     * First it tests the model by performing k-fold cross validation
+     * Then, it learns using the entire training data available
+     * @return mx1 matrix of trained weights
+     * NOTE: m is the number of features in training data
+     */
     @Override
     public Matrix doLinearRegression() {
         try {
-            LOGGER.log(Level.INFO, "===START MODEL TESTING (K-FOLD CROSS VALIDATAION===");
+            LOGGER.log(Level.INFO, "===START MODEL TESTING (K-FOLD CROSS VALIDATAION)===");
             if(this.crossLen > 0) {
                 double crossErr = doKFoldCrossValidation();
                 LOGGER.log(Level.INFO, "Cross validation error: {0}", crossErr);
@@ -90,7 +115,7 @@ public class GradientDescent extends LinearRegression {
             }
             LOGGER.log(Level.INFO, "Completed Linear Regression in {0} iterations", itr);
             
-            LOGGER.log(Level.INFO, "Iterations: {0}", itr);
+            LOGGER.log(Level.INFO, "Error: {0}", updateTheta(this.x, this.y));
             return theta;
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
@@ -98,6 +123,10 @@ public class GradientDescent extends LinearRegression {
         }
     }
     
+    /**
+     * Performs k-fold cross validation
+     * @return average cross validation error
+     */
     public double doKFoldCrossValidation() {
         try {
             double crossErr = 0;
@@ -114,7 +143,7 @@ public class GradientDescent extends LinearRegression {
                 LOGGER.log(Level.INFO, "Cross validataion round: {0} | "
                         + "Iterations: {1}", new Object[]{i, itr});
                 if(this.crossLen > 0) {
-                    crossErr = crossErr + crossValidate(this.cvX, this.cvY);
+                    crossErr = crossErr + getError(cvX, cvY, theta);
                 } else {
                     LOGGER.log(Level.WARNING, "No cross validataion set available.");
                 }
@@ -125,15 +154,15 @@ public class GradientDescent extends LinearRegression {
             return -1;
         }
     }
-    private double crossValidate(Matrix localcvX, Matrix localcvY) {
-        for(int i = 0; i<crossLen; i++) {
-            for(int j = 1; j<m; j++) {
-                localcvX.set(i, j, (localcvX.get(i, j) - mean[j])/std[j]);
-            }
-        }
-        return getError(localcvX, localcvY, theta);
-    }
     
+    /**
+     * Updates theta
+     * UpdateTheta() adjusts alpha to prevent the error from diverging by using a
+     * simple look-ahead logic
+     * @param localX 
+     * @param localY
+     * @return Cost with old theta
+     */
     private double updateTheta(Matrix localX, Matrix localY) {
         Matrix der = derivative(localX, localY);
         
@@ -145,11 +174,16 @@ public class GradientDescent extends LinearRegression {
             nextErr = getError(localX, localY, this.theta.minus(der.times((double)alpha)));
         }
         
-        //System.out.println("Error: " + err);
         this.theta = this.theta.minus(der.times((double)alpha));
         return err;
     }
     
+    /**
+     * @param localx
+     * @param localy
+     * @param localtheta
+     * @return Cost
+     */
     private double getError(Matrix localx, Matrix localy, Matrix localtheta) {
         Matrix check = localx.times(localtheta).minus(localy);
         Matrix cost  = check.transpose().times(check);
@@ -158,6 +192,11 @@ public class GradientDescent extends LinearRegression {
         return 0.5 * (cost.get(0, 0) + lambda * reg.get(0, 0))/localx.getRowDimension();
     }
     
+    /**
+     * @param localX
+     * @param localY
+     * @return mx1 matrix of derivatives for m features
+     */
     private Matrix derivative(Matrix localX, Matrix localY) {
         Matrix err = thetaX(localX).minus(localY);
         Matrix der = localX.transpose().times(err);
@@ -167,11 +206,23 @@ public class GradientDescent extends LinearRegression {
         return der;
     }
     
+    /**
+     * Computes prediction values for localX using current theta.
+     * @param localX
+     * @return nx1 matrix 
+     * NOTE: This should only be used to predict values for data that 
+     * was used for normalizing
+     */
     private Matrix thetaX(Matrix localX) {
         Matrix res = localX.times(theta);
         return res;
     }
     
+    /**
+     * Sets the blocks for k-fold cross validation
+     * @param crossValidationRatio
+     * @throws Exception 
+     */
     private void setCrossValidationPartitions(double crossValidationRatio) throws Exception{
         try {
             if(crossValidationRatio >= 1) {
@@ -202,7 +253,6 @@ public class GradientDescent extends LinearRegression {
             
             int index = 0;
             for(int i = 0; i<this.n; ) {
-                //int index = (int)(i/blockSize);
                 this.crossMat[index][0] = i;
                 this.crossMat[index][1] = i+blockSize-1;
                 i = i + blockSize;
@@ -221,9 +271,12 @@ public class GradientDescent extends LinearRegression {
         }
     }
     
+    /**
+     * Sets training data and cross validation data using crossMat
+     * @param crossIndex cross validation block number
+     */
     private void setData(int crossIndex) {
         try {
-            
             if(this.crossMat[crossIndex][0] != -1 && this.crossMat[crossIndex][1] != -1) {
                 int lower = this.crossMat[crossIndex][0];
                 int upper = this.crossMat[crossIndex][1];
@@ -266,6 +319,11 @@ public class GradientDescent extends LinearRegression {
         }
     }
     
+    /**
+     * Normalizes matrix x
+     * @param x nxm matrix 
+     * NOTE: n is the number of data and m is the number of features
+     */
     private void normalize(Matrix x) {
         try {
             int n = x.getRowDimension();
