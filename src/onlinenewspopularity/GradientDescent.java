@@ -17,8 +17,6 @@ import java.util.logging.Logger;
 public class GradientDescent extends LinearRegression {
     private static final Logger LOGGER = Logger.getLogger(GradientDescent.class.getName());
     
-    private static final int ITERLIMIT = 1000;
-    
     private int trainLen;
     private int crossLen;
     private int m;
@@ -37,7 +35,7 @@ public class GradientDescent extends LinearRegression {
     /**
      * Does few preprocessing steps for gradient descent
      * 1. Decides blocks for cross validation
-     * 2. Normalizes data
+     * 2. Normalizes data (optional)
      * @param x is the data available for training. It is an nxm matrix.
      * NOTE: This does not include test data
      * @param y is the target values for training data. It is an nx1 matrix.
@@ -57,7 +55,7 @@ public class GradientDescent extends LinearRegression {
         }
         setCrossValidationPartitions(Constants.CROSS_VALIDATOIN_RATIO);
         setData(0);
-        normalize(this.x);
+        //normalize(this.x);
         LOGGER.log(Level.INFO, "Training dataset size: {0}", trainLen);
         LOGGER.log(Level.INFO, "Crossvalidation dataset size: {0}", crossLen);
     }
@@ -107,7 +105,7 @@ public class GradientDescent extends LinearRegression {
             int itr = 0;
             
             //while(true) {
-            for(int i = 0; i<ITERLIMIT; i++) {
+            for(int i = 0; i<Constants.ITERLIMIT; i++) {
                 if(updateTheta(this.x, this.y) < 0.0000001) {
                     break;
                 }
@@ -134,7 +132,7 @@ public class GradientDescent extends LinearRegression {
                 setData(i);
                 theta = new Matrix(this.m, 1, 0.0);
                 int itr = 0;
-                for(int j = 0; j<ITERLIMIT; j++) {
+                for(int j = 0; j<Constants.ITERLIMIT; j++) {
                     if(updateTheta(this.trainX, this.trainY) < 0.0000001) {
                     break;
                     }

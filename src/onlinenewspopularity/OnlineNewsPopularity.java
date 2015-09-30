@@ -9,7 +9,6 @@ import Jama.Matrix;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +40,6 @@ public class OnlineNewsPopularity {
             
             //print data that has been read
             System.out.println("predict: " + predictColName);
-            System.out.print("features: ");
-            for(int i = 0; i<features.size(); i++) {
-                System.out.print(features.get(i) + " | ");
-            }
             
             System.out.println();
             System.out.println("Data set:");
@@ -55,6 +50,12 @@ public class OnlineNewsPopularity {
             //testy.print(new DecimalFormat(Constants.NUMBER_FORMAT), 5);
             */
             
+            StringBuilder sb = new StringBuilder("Features: ");
+            for(int i = 0; i<features.size(); i++) {
+                sb.append(features.get(i)).append(" | ");
+            }
+            LOGGER.log(Level.INFO, "Total number of valid features: {0}", features.size());
+            LOGGER.log(Level.INFO, sb.toString());
             /**
              * Perform Linear Regression
              */
@@ -66,7 +67,7 @@ public class OnlineNewsPopularity {
             
             System.out.println();
             System.out.println("FINAL THETA:");
-            res.print(new DecimalFormat(), 5);
+            printTheta(res, features);
             
             System.out.println("\nprediction:");
             if(testx.getRowDimension() > 0) {
@@ -82,6 +83,23 @@ public class OnlineNewsPopularity {
         }
     }
     
+    /**
+     * Prints the weights for corresponding feautres
+     * @param theta mx1 matrix of weights
+     * @param features list of features
+     * NOTE: m is the number of valid features
+     * @throws Exception 
+     */
+    private static void printTheta(Matrix theta, List features) throws Exception {
+        try {
+            for(int i = 0; i<theta.getRowDimension(); i++) {
+                System.out.println(features.get(i) + ": " + theta.get(i, 0));
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "{0}: {1}", new Object[]{e.getClass().getName(), e.getMessage()});
+            throw e;
+        }
+    }
     /**
      * This is used to determine which features to use for part 2 of the assignment
      * @param res
