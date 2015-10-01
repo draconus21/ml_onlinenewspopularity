@@ -182,7 +182,7 @@ public class GradientDescent extends LinearRegression {
      * @param localtheta
      * @return Cost
      */
-    public double getError(Matrix localx, Matrix localy, Matrix localtheta) {
+    private double getError(Matrix localx, Matrix localy, Matrix localtheta) {
         Matrix check = localx.times(localtheta).minus(localy);
         Matrix cost  = check.transpose().times(check);
         Matrix reg   = localtheta.transpose().times(localtheta);

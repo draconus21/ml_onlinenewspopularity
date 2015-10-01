@@ -28,14 +28,12 @@ public class Constants {
      * The input file should contain the features and the target data value
      */
     
-    public static final int    ITERLIMIT              = 1000;
+    public static final int    ITERLIMIT              = 100;
     public static final int    SIZE                   = 39644;
     public static final double CROSS_VALIDATOIN_RATIO = 0.2;
     public static final double TEST_SET_RATIO         = 0.2;
     public static final String INPUT_FILE             = "data\\OnlineNewsPopularity.csv";
-    //public static final String INPUT_FILE = "data\\ngData.csv";
-    //public static final String INPUT_FILE = "data\\data.csv";
-    //public static final String INPUT_FILE = "data\\test1.csv";
+    //public static final String INPUT_FILE           = "data\\data.csv";
     public static final int    INITIAL_FEATURE_INDEX  = 2;
     
     /**
