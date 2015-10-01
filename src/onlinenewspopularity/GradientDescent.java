@@ -55,7 +55,7 @@ public class GradientDescent extends LinearRegression {
         }
         setCrossValidationPartitions(Constants.CROSS_VALIDATOIN_RATIO);
         setData(0);
-        //normalize(this.x);
+        normalize(this.x);
         LOGGER.log(Level.INFO, "Training dataset size: {0}", trainLen);
         LOGGER.log(Level.INFO, "Crossvalidation dataset size: {0}", crossLen);
     }
