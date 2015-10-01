@@ -104,9 +104,8 @@ public class GradientDescent extends LinearRegression {
             
             int itr = 0;
             
-            //while(true) {
             for(int i = 0; i<Constants.ITERLIMIT; i++) {
-                if(updateTheta(this.x, this.y) < 0.0000001) {
+                if(updateTheta(this.x, this.y) < Constants.MAX_DESIRED_ACCURACY) {
                     break;
                 }
                 itr++;
